@@ -30,6 +30,9 @@ func main() {
 	app := cli.NewApp()
 	st := NewShiftTable(os.Getenv("OFLS_KEY"), os.Getenv("OFLS_GID"))
 
+	app.Name = "shien"
+	app.Usage = "show time shift of OFLS"
+
 	app.Commands = []cli.Command{
 		{Name: "date",
 			Aliases: []string{"d"},
