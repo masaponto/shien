@@ -32,7 +32,7 @@ func main() {
 
 	app.Name = "shien"
 	app.Usage = "show time shift of OFLS"
-
+	app.Version = "0.0.1"
 	app.Commands = []cli.Command{
 		{Name: "date",
 			Aliases: []string{"d"},
@@ -63,9 +63,36 @@ func main() {
 		fmt.Println(st.Today())
 		return nil
 	}
-	app.Version = "0.0.1"
 
 	app.Run(os.Args)
+}
+
+func (shift Shift) FormatTable() string {
+
+	indices := [10]string{
+		"1st",
+		"2nd",
+		"lun",
+		"3rd",
+		"4th",
+		"5th",
+		"nig",
+		"-----\nmur",
+		"hig",
+		"etc"}
+
+	var buf bytes.Buffer
+
+	buf.WriteString(shift.date)
+
+	for i, names := range shift.table {
+		buf.WriteString("\n")
+		buf.WriteString(indices[i])
+		buf.WriteString(" : ")
+		buf.WriteString(names)
+	}
+
+	return buf.String()
 }
 
 func (st ShiftTable) Today() string {
@@ -119,6 +146,21 @@ func (st ShiftTable) ShowWeekTable(daystr string) {
 	table.Render()
 }
 
+func (st ShiftTable) Week(daystr string) string {
+
+	start, end := getShowRange(daystr)
+
+	var buf bytes.Buffer
+	for d := start; d < end; d++ {
+		buf.WriteString(st.Day(strconv.Itoa(d)))
+		if d != end-1 {
+			buf.WriteString("\n\n")
+		}
+	}
+
+	return buf.String()
+}
+
 func getShowRange(daystr string) (start, end int) {
 	re1 := regexp.MustCompile(`\d+\/\d+`)
 	re2 := regexp.MustCompile(`^-?\d+$`)
@@ -157,21 +199,6 @@ func getShowRange(daystr string) (start, end int) {
 	return
 }
 
-func (st ShiftTable) Week(daystr string) string {
-
-	start, end := getShowRange(daystr)
-
-	var buf bytes.Buffer
-	for d := start; d < end; d++ {
-		buf.WriteString(st.Day(strconv.Itoa(d)))
-		if d != end-1 {
-			buf.WriteString("\n\n")
-		}
-	}
-
-	return buf.String()
-}
-
 func NewShiftTable(key string, gid string) ShiftTable {
 	url := "https://docs.google.com/spreadsheets/d/" + key + "/export?format=csv&gid=" + gid
 	response, err := http.Get(url)
@@ -181,13 +208,13 @@ func NewShiftTable(key string, gid string) ShiftTable {
 	defer response.Body.Close()
 
 	reader := csv.NewReader(response.Body)
-	return getShiftMap(reader)
+	return getShiftTable(reader)
 }
 
-func getShiftMap(r *csv.Reader) ShiftTable {
+func getShiftTable(r *csv.Reader) ShiftTable {
 
 	re := regexp.MustCompile(`\d+\/\d+`)
-	shiftmap := map[string]Shift{}
+	shiftable := map[string]Shift{}
 
 	for {
 		record, err := r.Read()
@@ -201,11 +228,11 @@ func getShiftMap(r *csv.Reader) ShiftTable {
 
 		if re.MatchString(record[0]) {
 			result := re.FindString(record[0])
-			shiftmap[result] = Shift{record[0], getOneDayTable(record[1:])}
+			shiftable[result] = Shift{record[0], getOneDayTable(record[1:])}
 		}
 	}
 
-	return shiftmap
+	return shiftable
 }
 
 func getOneDayTable(record []string) []string {
@@ -219,32 +246,4 @@ func getOneDayTable(record []string) []string {
 		strings.TrimRight(strings.Join(record[13:15], ","), "/,*$/"),
 		strings.TrimRight(strings.Join(record[16:21], ","), "/,*$/"),
 		record[22], record[23], record[24]}
-}
-
-func (shift Shift) FormatTable() string {
-
-	indices := [10]string{
-		"1st",
-		"2nd",
-		"lun",
-		"3rd",
-		"4th",
-		"5th",
-		"nig",
-		"-----\nmur",
-		"hig",
-		"etc"}
-
-	var buf bytes.Buffer
-
-	buf.WriteString(shift.date)
-
-	for i, names := range shift.table {
-		buf.WriteString("\n")
-		buf.WriteString(indices[i])
-		buf.WriteString(" : ")
-		buf.WriteString(names)
-	}
-
-	return buf.String()
 }
