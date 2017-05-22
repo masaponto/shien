@@ -28,7 +28,15 @@ const layout = "1/2"
 func main() {
 
 	app := cli.NewApp()
-	st := NewShiftTable(os.Getenv("OFLS_KEY"), os.Getenv("OFLS_GID"))
+	key := os.Getenv("OFLS_KEY")
+	gid := os.Getenv("OFLS_GID")
+
+	if key == "" || gid == "" {
+		fmt.Println("Oooops! key or gid is empty :(")
+		os.Exit(1)
+	}
+
+	st := NewShiftTable(key, gid)
 
 	app.Name = "shien"
 	app.Usage = "show time shift of OFLS"
@@ -203,6 +211,7 @@ func NewShiftTable(key string, gid string) ShiftTable {
 	url := "https://docs.google.com/spreadsheets/d/" + key + "/export?format=csv&gid=" + gid
 	response, err := http.Get(url)
 	if err != nil {
+		fmt.Println("Oooops! key or gid is invalid :(")
 		panic(err)
 	}
 	defer response.Body.Close()
@@ -222,6 +231,7 @@ func getShiftTable(r *csv.Reader) ShiftTable {
 		if err == io.EOF {
 			break
 		} else if err != nil {
+			fmt.Println("Oooops! key or gid is invalid :(")
 			fmt.Println("Read error: ", err)
 			break
 		}
