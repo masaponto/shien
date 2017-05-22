@@ -10,7 +10,7 @@ $ echo 'export OFLS_GID=<your-gid-for-spread-sheet-goes-here>' >> ~/.bash_profil
 ```
 
 ## Usage
-see ```shien h```
+see ```$shien h```
 
 ## Require
 - https://github.com/olekukonko/tablewriter
