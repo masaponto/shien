@@ -16,5 +16,14 @@ see ```$shien h```
 - https://github.com/olekukonko/tablewriter
 - https://github.com/urfave/cli
 
+## Development environment
+- go 1.8.2
+
 ## License
-NYSL
+NYSL  
+
+- This software uses [tablewrite](https://github.com/olekukonko/tablewriter) which is released under the MIT license  
+Copyright (C) 2014 by Oleku Konko  
+
+- This software uses [cli](https://github.com/urfave/cli) which is released unedr the MIT license  
+Copyright (c) 2016 Jeremy Saenz & Contributors  
